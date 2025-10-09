@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { dummyMyBookingsData } from "../../assets/assets";
-import Title from "../../components/Title"; // make sure this path is correct
+
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useAppContext } from "../../Context/Appcontext";
+import Title from "../../components/Title";
 
 const ManageBooking = () => {
   const [bookings, setBookings] = useState([]);
