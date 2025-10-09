@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useAppContext } from "../../Context/Appcontext";
-import Title from "../../components/Title";
+import Title from "../../Components/Owner/Title";
+
 
 const ManageBooking = () => {
   const [bookings, setBookings] = useState([]);
