@@ -58,13 +58,20 @@ export const AppProvider = ({children}) => {
         setToken(token)
     },[])
 
-    useEffect(() => {
-      if(token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        fetchUser();
-        fetchCars();
-      }
-    },[token])
+    
+
+useEffect(() => {
+ 
+  fetchCars();
+
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    fetchUser();
+  } else {
+    axios.defaults.headers.common['Authorization'] = "";
+  }
+}, [token]);
+
 
 
 
