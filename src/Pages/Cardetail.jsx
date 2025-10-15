@@ -17,23 +17,27 @@ const Cardetail = () => {
     returnDate,
     setReturnDate,
     token,
-    setShowLogin, // ✅ for login popup
+    setShowLogin, // ✅ to trigger login popup
   } = useAppContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ If user not logged in, show login popup
+    // ✅ Check if user is logged in
     if (!token) {
       toast.error("Please login or register first to book a car");
-      setShowLogin(true); // open popup
-      return;
+      setShowLogin(true); // open login popup
+      return; // stop further execution
     }
 
     try {
       const { data } = await axios.post(
         "/api/booking/create",
-        { car: id, pickupDate, returnDate },
+        {
+          car: id,
+          pickupDate,
+          returnDate,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -48,10 +52,13 @@ const Cardetail = () => {
         toast.error("Car is already booked. Please try another date.");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Something went wrong");
+      toast.error(
+        error.response?.data?.message || "Booking failed. Please try again."
+      );
     }
   };
 
+  // ✅ Find the car details by ID
   useEffect(() => {
     setCar(cars.find((car) => car._id === id));
   }, [cars, id]);
@@ -67,11 +74,12 @@ const Cardetail = () => {
       </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+        {/* ✅ Car Info */}
         <div className="lg:col-span-2">
           <img
             className="w-full h-auto md:max-h-100 object-cover rounded-xl mb-6 shadow-md"
             src={car.image}
-            alt=""
+            alt={car.model}
           />
           <div className="space-y-6">
             <div>
@@ -83,29 +91,29 @@ const Cardetail = () => {
               </p>
             </div>
             <hr className="border border-black my-6" />
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                {
-                  icon: assets.users_icon,
-                  text: `${car.seating_capacity} Seats`,
-                },
+                { icon: assets.users_icon, text: `${car.seating_capacity} Seats` },
                 { icon: assets.fuel_icon, text: car.fuel_type },
                 { icon: assets.car_icon, text: car.transmission },
                 { icon: assets.location_icon, text: car.location },
               ].map(({ icon, text }) => (
                 <div
-                  className="flex flex-col items-center bg-gray-300 p-4 rounded-lg"
                   key={text}
+                  className="flex flex-col items-center bg-gray-300 p-4 rounded-lg"
                 >
                   <img className="h-5 mb-2" src={icon} alt="" />
                   {text}
                 </div>
               ))}
             </div>
+
             <div>
               <h1 className="text-xl font-medium mb-2">Description</h1>
               <p className="text-gray-500">{car.description}</p>
             </div>
+
             <div>
               <h1 className="text-xl font-medium mb-3">Features</h1>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -136,6 +144,7 @@ const Cardetail = () => {
             <span className="text-base text-gray-400 font-normal">Per Day</span>
           </p>
           <hr className="border-black my-6" />
+
           <div className="flex flex-col gap-2">
             <label htmlFor="pickup-date">Pickup Date</label>
             <input
@@ -148,6 +157,7 @@ const Cardetail = () => {
               min={new Date().toISOString().split("T")[0]}
             />
           </div>
+
           <div className="flex flex-col gap-2">
             <label htmlFor="return-date">Return Date</label>
             <input
@@ -159,9 +169,14 @@ const Cardetail = () => {
               id="return-date"
             />
           </div>
-          <button className="w-full bg-blue-600 hover:bg-blue-500 transition-all py-3 font-medium text-white rounded-xl cursor-pointer">
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-500 transition-all py-3 font-medium text-white rounded-xl cursor-pointer"
+          >
             Book Now
           </button>
+
           <p className="text-center text-sm">
             No Credit Card Required To Reserve.
           </p>
