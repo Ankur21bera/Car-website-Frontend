@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { assets, dummyCarData } from "../assets/assets";
+import { assets } from "../assets/assets";
 import Loader from "../Components/Loader";
 import { useAppContext } from "../Context/Appcontext";
 import axios from "axios";
@@ -10,34 +10,52 @@ const Cardetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [car, setCar] = useState(null);
-  const {cars,pickupDate,setPickupDate,returnDate,setReturnDate,token} = useAppContext();
+  const {
+    cars,
+    pickupDate,
+    setPickupDate,
+    returnDate,
+    setReturnDate,
+    token,
+    setShowLogin, // ✅ for login popup
+  } = useAppContext();
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // ✅ If user not logged in, show login popup
+    if (!token) {
+      toast.error("Please login or register first to book a car");
+      setShowLogin(true); // open popup
+      return;
+    }
+
     try {
-      const {data} = await axios.post('/api/booking/create',{
-        car:id,
-        pickupDate,
-        returnDate
-      },{
-         headers: {
-            Authorization: `Bearer ${token}`, // ✅ send token
+      const { data } = await axios.post(
+        "/api/booking/create",
+        { car: id, pickupDate, returnDate },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-      })
-      if(data.success) {
-        toast.success("Car Booked Successfully")
-        navigate('/my-bookings')
-      } else{
-        toast.success("Car Is Already Book Please Try Another Date")
+        }
+      );
+
+      if (data.success) {
+        toast.success("Car booked successfully!");
+        navigate("/my-bookings");
+      } else {
+        toast.error("Car is already booked. Please try another date.");
       }
     } catch (error) {
-      toast.error(error.message)
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
-  }
+  };
 
   useEffect(() => {
     setCar(cars.find((car) => car._id === id));
-  }, [cars,id]);
+  }, [cars, id]);
+
   return car ? (
     <div className="px-6 md:px-16 lg:px-24 xl:px-32 mt-16">
       <button
@@ -69,7 +87,7 @@ const Cardetail = () => {
               {[
                 {
                   icon: assets.users_icon,
-                  text: `${car.seating_capacity}Seats`,
+                  text: `${car.seating_capacity} Seats`,
                 },
                 { icon: assets.fuel_icon, text: car.fuel_type },
                 { icon: assets.car_icon, text: car.transmission },
@@ -92,7 +110,7 @@ const Cardetail = () => {
               <h1 className="text-xl font-medium mb-3">Features</h1>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
-                  "360 Camers",
+                  "360 Camera",
                   "Bluetooth",
                   "GPS",
                   "Heated Seats",
@@ -107,25 +125,52 @@ const Cardetail = () => {
             </div>
           </div>
         </div>
-        <form onSubmit={handleSubmit} className="shadow-lg h-max sticky top-18 rounded-xl p-6 space-y-6 text-gray-500">
-         <p className="flex items-center justify-between text-2xl text-gray-800 font-semibold">₹{car.pricePerDay} <span className="text-base text-gray-400 font-normal">Per Day</span> </p>
-         <hr className="border-black my-6" />
-         <div className="flex flex-col gap-2">
-          <label htmlFor="pickup-date">Pickup Date</label>
-          <input value={pickupDate} onChange={(e)=>setPickupDate(e.target.value)} type="date" className="border border-black px-3 py-2 rounded-lg" required id="pickup-date" min={new Date().toISOString().split('T')[0]} />
-         </div>
-         <div className="flex flex-col gap-2">
-          <label htmlFor="return-date">Return Date</label>
-          <input value={returnDate} onChange={(e)=>setReturnDate(e.target.value)} type="date" className="border border-black px-3 py-2 rounded-lg" required id="return-date"/>
-         </div>
-         <button className="w-full bg-blue-600 hover:bg-blue-400 transition-all py-3 font-medium text-white rounded-xl cursor-pointer">Book Now</button>
-         <p className="text-center text-sm">No Credit Card Required To Reserve.</p>
+
+        {/* ✅ Booking Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="shadow-lg h-max sticky top-18 rounded-xl p-6 space-y-6 text-gray-500"
+        >
+          <p className="flex items-center justify-between text-2xl text-gray-800 font-semibold">
+            ₹{car.pricePerDay}
+            <span className="text-base text-gray-400 font-normal">Per Day</span>
+          </p>
+          <hr className="border-black my-6" />
+          <div className="flex flex-col gap-2">
+            <label htmlFor="pickup-date">Pickup Date</label>
+            <input
+              value={pickupDate}
+              onChange={(e) => setPickupDate(e.target.value)}
+              type="date"
+              className="border border-black px-3 py-2 rounded-lg"
+              required
+              id="pickup-date"
+              min={new Date().toISOString().split("T")[0]}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="return-date">Return Date</label>
+            <input
+              value={returnDate}
+              onChange={(e) => setReturnDate(e.target.value)}
+              type="date"
+              className="border border-black px-3 py-2 rounded-lg"
+              required
+              id="return-date"
+            />
+          </div>
+          <button className="w-full bg-blue-600 hover:bg-blue-500 transition-all py-3 font-medium text-white rounded-xl cursor-pointer">
+            Book Now
+          </button>
+          <p className="text-center text-sm">
+            No Credit Card Required To Reserve.
+          </p>
         </form>
       </div>
     </div>
   ) : (
-    <Loader/>
-  )
+    <Loader />
+  );
 };
 
 export default Cardetail;
